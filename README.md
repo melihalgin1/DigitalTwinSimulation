@@ -1,5 +1,7 @@
 # Automotive Production Plant Digital Twin Simulation
 
+#License: MIT
+
 ## Overview
 
 This project is a takt-based digital twin simulation of a fictional automotive production plant developed in **C# (.NET)**. The primary goal is to demonstrate:

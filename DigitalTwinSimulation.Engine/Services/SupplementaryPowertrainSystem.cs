@@ -34,12 +34,12 @@ public sealed class SupplementaryPowertrainSystem
 
     public string NextRequiredVinText =>
         _readyQueue.Count > 0
-            ? _readyQueue.Peek().VIN.ToString()
+            ? _readyQueue.Peek().Vin.ToString()
             : "NONE";
 
     public IReadOnlyList<string> ReadyPowertrainVinTexts =>
         _readyQueue
-            .Select(powertrain => powertrain.VIN.ToString())
+            .Select(powertrain => powertrain.Vin.ToString())
             .ToList();
 
     public bool HasMaintenanceActive =>
@@ -59,7 +59,7 @@ public sealed class SupplementaryPowertrainSystem
             return false;
 
         var nextReady = _readyQueue.Peek();
-        return nextReady.VIN.SequenceNumber == vin.SequenceNumber;
+        return nextReady.Vin.SequenceNumber == vin.SequenceNumber;
     }
 
     public bool TryConsumeReadyPowertrain(VIN vin)
@@ -69,7 +69,7 @@ public sealed class SupplementaryPowertrainSystem
 
         var nextReady = _readyQueue.Peek();
 
-        if (nextReady.VIN.SequenceNumber != vin.SequenceNumber)
+        if (nextReady.Vin.SequenceNumber != vin.SequenceNumber)
             return false;
 
         _readyQueue.Dequeue();

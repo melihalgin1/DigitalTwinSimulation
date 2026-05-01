@@ -16,6 +16,7 @@ public sealed class PlantSimulationEngine
     private readonly SupplementaryPowertrainSystem _supplementarySystem;
     private readonly StandardGroupMonitorService _standardGroupMonitorService = new();
     private readonly SupplementaryMonitorService _supplementaryMonitorService = new();
+    private readonly AsrsMonitorService _asrsMonitorService = new();
     private readonly Dictionary<StationGroupType, int> _movementCountsLastTakt = [];
     private readonly Random _random = new();
 
@@ -76,6 +77,11 @@ public sealed class PlantSimulationEngine
             _supplementarySystem,
             GetCurrentMarriageVIN()
         );
+    }
+
+    public AsrsMonitorSnapshot GetAsrsMonitor()
+    {
+        return _asrsMonitorService.BuildPlaceholderSnapshot();
     }
 
     public IReadOnlyList<StationGroupSnapshot> GetGroupedSnapshot()

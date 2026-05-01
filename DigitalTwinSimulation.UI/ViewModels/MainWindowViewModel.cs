@@ -14,6 +14,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private int _finishedVehicleCount;
     private int _readyPowertrainCount;
     private string _nextReadyPowertrainVin = "NONE";
+    private SupplementaryMonitorItemViewModel? _supplementaryMonitor;
+    private AsrsMonitorItemViewModel? _asrsMonitor;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -69,6 +71,32 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
+    public SupplementaryMonitorItemViewModel? SupplementaryMonitor
+    {
+        get => _supplementaryMonitor;
+        private set
+        {
+            if (_supplementaryMonitor != value)
+            {
+                _supplementaryMonitor = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public AsrsMonitorItemViewModel? AsrsMonitor
+    {
+        get => _asrsMonitor;
+        private set
+        {
+            if (_asrsMonitor != value)
+            {
+                _asrsMonitor = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public ObservableCollection<GroupMonitorItemViewModel> GroupMonitors { get; } = new();
     public ObservableCollection<StationGroupSnapshot> StationGroups { get; } = new();
     public ObservableCollection<string> EngineDressingSnapshot { get; } = new();
@@ -76,6 +104,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public MainWindowViewModel()
     {
         _engine = new PlantSimulationEngine();
+
         CurrentTakt = _engine.CurrentTakt;
         FinishedVehicleCount = _engine.FinishedVehicleCount;
         ReadyPowertrainCount = _engine.ReadyPowertrainCount;
@@ -87,6 +116,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public void AdvanceTakt()
     {
         _engine.AdvanceOneTakt();
+
         CurrentTakt = _engine.CurrentTakt;
         FinishedVehicleCount = _engine.FinishedVehicleCount;
         ReadyPowertrainCount = _engine.ReadyPowertrainCount;
@@ -102,6 +132,14 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         {
             GroupMonitors.Add(new GroupMonitorItemViewModel(monitor));
         }
+
+        SupplementaryMonitor = new SupplementaryMonitorItemViewModel(
+            _engine.GetSupplementaryMonitor()
+        );
+
+        AsrsMonitor = new AsrsMonitorItemViewModel(
+            _engine.GetAsrsMonitor()
+        );
 
         StationGroups.Clear();
         foreach (var group in _engine.GetGroupedSnapshot())

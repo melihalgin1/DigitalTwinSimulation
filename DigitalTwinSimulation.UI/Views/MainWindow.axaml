@@ -91,6 +91,81 @@
                 <Border Padding="10"
                         BorderThickness="1"
                         CornerRadius="6">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Special System Monitors"
+                                   FontWeight="Bold"
+                                   FontSize="20"/>
+
+                        <WrapPanel Orientation="Horizontal">
+
+                            <Button Padding="0"
+                                    MinWidth="300"
+                                    MinHeight="210"
+                                    Margin="0,0,12,12">
+                                <Border Background="{Binding SupplementaryMonitor.StatusColorHex}"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Width="300">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding SupplementaryMonitor.MonitorName}"
+                                                   FontWeight="Bold"
+                                                   FontSize="18"/>
+
+                                        <TextBlock Text="{Binding SupplementaryMonitor.StatusText, StringFormat='Status: {0}'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.StopTypeText, StringFormat='Stop: {0}'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.ReasonText, StringFormat='Reason: {0}'}"
+                                                   TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="{Binding SupplementaryMonitor.ReadyPowertrainCount, StringFormat='Ready Powertrains: {0}'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.ReadyPowertrainCapacity, StringFormat='Buffer Capacity: {0}'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.ReadyPowertrainUsagePercentage, StringFormat='Buffer Usage: {0:F1}%'}"/>
+
+                                        <TextBlock Text="{Binding SupplementaryMonitor.NextReadyPowertrainVinText, StringFormat='Next Ready VIN: {0}'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.CurrentMarriageVinText, StringFormat='Marriage VIN: {0}'}"/>
+
+                                        <TextBlock Text="{Binding SupplementaryMonitor.EngineDressingFaultedStations, StringFormat='ED Faulted: {0}'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.EngineDressingAverageWear, StringFormat='ED Avg Wear: {0:F1}%'}"/>
+                                        <TextBlock Text="{Binding SupplementaryMonitor.EngineDressingMovementCountLastTakt, StringFormat='ED Moves Last Takt: {0}'}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Button>
+
+                            <Button Padding="0"
+                                    MinWidth="300"
+                                    MinHeight="210"
+                                    Margin="0,0,12,12">
+                                <Border Background="{Binding AsrsMonitor.StatusColorHex}"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Width="300">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding AsrsMonitor.MonitorName}"
+                                                   FontWeight="Bold"
+                                                   FontSize="18"/>
+
+                                        <TextBlock Text="{Binding AsrsMonitor.StatusText, StringFormat='Status: {0}'}"/>
+                                        <TextBlock Text="{Binding AsrsMonitor.StopTypeText, StringFormat='Stop: {0}'}"/>
+                                        <TextBlock Text="{Binding AsrsMonitor.ReasonText, StringFormat='Reason: {0}'}"
+                                                   TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="{Binding AsrsMonitor.StoredVehicleCount, StringFormat='Stored Vehicles: {0}'}"/>
+                                        <TextBlock Text="{Binding AsrsMonitor.Capacity, StringFormat='Capacity: {0}'}"/>
+                                        <TextBlock Text="{Binding AsrsMonitor.UsagePercentage, StringFormat='Usage: {0:F1}%'}"/>
+
+                                        <TextBlock Text="{Binding AsrsMonitor.NextRequiredVinText, StringFormat='Next Required VIN: {0}'}"/>
+                                        <TextBlock Text="{Binding AsrsMonitor.IsNextRequiredVinPresent, StringFormat='Next VIN Present: {0}'}"/>
+                                        <TextBlock Text="{Binding AsrsMonitor.IsReleaseReady, StringFormat='Release Ready: {0}'}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Button>
+
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Padding="10"
+                        BorderThickness="1"
+                        CornerRadius="6">
                     <StackPanel Spacing="6">
                         <TextBlock Text="Main Line Debug Snapshot"
                                    FontWeight="Bold"

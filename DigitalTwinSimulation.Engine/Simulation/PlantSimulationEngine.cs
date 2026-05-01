@@ -15,6 +15,7 @@ public sealed class PlantSimulationEngine
     private readonly List<VIN> _finishedVehicles = [];
     private readonly SupplementaryPowertrainSystem _supplementarySystem;
     private readonly StandardGroupMonitorService _standardGroupMonitorService = new();
+    private readonly SupplementaryMonitorService _supplementaryMonitorService = new();
     private readonly Dictionary<StationGroupType, int> _movementCountsLastTakt = [];
     private readonly Random _random = new();
 
@@ -66,6 +67,14 @@ public sealed class PlantSimulationEngine
             () => CanFeedCh1EntryFromTr2(),
             () => CanCh1FeedCh2(),
             () => CanCh2FeedFinal()
+        );
+    }
+
+    public SupplementaryMonitorSnapshot GetSupplementaryMonitor()
+    {
+        return _supplementaryMonitorService.BuildSnapshot(
+            _supplementarySystem,
+            GetCurrentMarriageVIN()
         );
     }
 
@@ -241,6 +250,16 @@ public sealed class PlantSimulationEngine
         }
 
         SeedInitialVehicle();
+    }
+
+    private VIN? GetCurrentMarriageVIN()
+    {
+        var ch2 = MainLineGroups.First(group => group.GroupType == StationGroupType.CH2);
+
+        if (ch2.Stations.Count <= MarriageStationIndexInCh2)
+            return null;
+
+        return ch2.Stations[MarriageStationIndexInCh2].CurrentVIN;
     }
 
     private bool IsMarriageStation(int groupIndex, int stationIndex)

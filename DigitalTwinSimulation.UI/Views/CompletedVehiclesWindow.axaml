@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:DigitalTwinSimulation.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="DigitalTwinSimulation.UI.Views.CompletedVehiclesWindow"
+        x:DataType="vm:CompletedVehiclesWindowViewModel"
+        Title="Completed Vehicles"
+        Width="650"
+        Height="700">
+
+    <DockPanel Margin="20">
+
+        <StackPanel DockPanel.Dock="Top"
+                    Spacing="6"
+                    Margin="0,0,0,16">
+
+            <TextBlock Text="{Binding Title}"
+                       FontSize="24"
+                       FontWeight="Bold"/>
+
+            <TextBlock Text="{Binding WindowDescription}"
+                       FontSize="14"/>
+
+            <TextBlock Text="{Binding SnapshotTimeText}"
+                       FontSize="14"
+                       FontWeight="SemiBold"/>
+
+            <TextBlock Text="{Binding VehicleCount, StringFormat='Vehicle Count: {0}'}"
+                       FontSize="14"/>
+
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+            <ItemsControl ItemsSource="{Binding CompletedVehicles}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CompletedVehicleItemViewModel">
+                        <Border Margin="0,0,0,10"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="6">
+
+                            <StackPanel Spacing="4">
+
+                                <TextBlock Text="{Binding VinText}"
+                                           FontWeight="Bold"
+                                           FontSize="16"/>
+
+                                <WrapPanel Orientation="Horizontal">
+
+                                    <TextBlock Text="{Binding CompletionTakt, StringFormat='Completion Takt: {0}'}"
+                                               Width="180"/>
+
+                                    <TextBlock Text="{Binding CompletionTimeText, StringFormat='Completion Time: {0}'}"
+                                               Width="220"/>
+
+                                </WrapPanel>
+
+                            </StackPanel>
+
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

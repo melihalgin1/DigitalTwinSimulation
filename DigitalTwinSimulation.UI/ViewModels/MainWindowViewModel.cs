@@ -1,14 +1,17 @@
 ﻿using DigitalTwinSimulation.Core.Layout;
 using DigitalTwinSimulation.Engine.Simulation;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using System;
 
 namespace DigitalTwinSimulation.UI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 {
+    private const double ShiftDurationMinutes = 480.0;
+
     private readonly PlantSimulationEngine _engine;
 
     private int _currentTakt;
@@ -221,6 +224,66 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         SimulatedElapsedMinutes = _engine.SimulatedElapsedMinutes;
 
         RefreshSnapshots();
+    }
+
+    public StationGroupDetailWindowViewModel CreateStationGroupDetailViewModel(string groupName)
+    {
+        var monitorSnapshot = _engine
+            .GetStandardGroupMonitors()
+            .FirstOrDefault(monitor => monitor.GroupName == groupName);
+
+        if (monitorSnapshot is null)
+        {
+            throw new InvalidOperationException($"Monitor snapshot not found for group '{groupName}'.");
+        }
+
+        var groupSnapshot = _engine
+            .GetGroupedSnapshot()
+            .FirstOrDefault(group => group.GroupName == groupName);
+
+        if (groupSnapshot is null)
+        {
+            throw new InvalidOperationException($"Station group snapshot not found for group '{groupName}'.");
+        }
+
+        return new StationGroupDetailWindowViewModel(
+            monitorSnapshot,
+            groupSnapshot
+        );
+    }
+
+    public SupplementaryDetailWindowViewModel CreateSupplementaryDetailWindowViewModel()
+    {
+        if (SupplementaryMonitor is null)
+        {
+            throw new InvalidOperationException("Supplementary monitor snapshot is not available.");
+        }
+
+        return new SupplementaryDetailWindowViewModel(
+            SupplementaryMonitor,
+            _engine.GetEngineDressingGroupSnapshot()
+        );
+    }
+
+    public AsrsDetailWindowViewModel CreateAsrsDetailWindowViewModel()
+    {
+        if (AsrsMonitor is null)
+        {
+            throw new InvalidOperationException("ASRS monitor snapshot is not available.");
+        }
+
+        return new AsrsDetailWindowViewModel(AsrsMonitor);
+    }
+
+    public CompletedVehiclesWindowViewModel CreateCompletedVehiclesWindowViewModel()
+    {
+        var completedVehicles = _engine.GetCompletedVehiclesInLastShift();
+
+        return new CompletedVehiclesWindowViewModel(
+            completedVehicles,
+            ShiftDurationMinutes,
+            _engine.SimulatedElapsedMinutes
+        );
     }
 
     private void RefreshSnapshots()

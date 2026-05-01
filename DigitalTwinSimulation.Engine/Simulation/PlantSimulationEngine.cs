@@ -13,6 +13,8 @@ public sealed class PlantSimulationEngine
 
     private int _nextVINSequence = 1;
     private readonly List<VIN> _finishedVehicles = [];
+    private readonly List<CompletedVehicleRecord> _completedVehicleRecords = [];
+
     private SupplementaryPowertrainSystem _supplementarySystem;
     private readonly StandardGroupMonitorService _standardGroupMonitorService = new();
     private readonly SupplementaryMonitorService _supplementaryMonitorService = new();
@@ -27,6 +29,8 @@ public sealed class PlantSimulationEngine
     public StationGroup EngineDressingGroup { get; private set; }
 
     public IReadOnlyList<VIN> FinishedVehicles => _finishedVehicles;
+    public IReadOnlyList<CompletedVehicleRecord> CompletedVehicleRecords => _completedVehicleRecords;
+
     public int FinishedVehicleCount => _finishedVehicles.Count;
     public int ReadyPowertrainCount => _supplementarySystem.ReadyCount;
     public string NextReadyPowertrainVin => _supplementarySystem.NextRequiredVinText;
@@ -53,11 +57,14 @@ public sealed class PlantSimulationEngine
             taktDurationMinutes = 1.0;
         }
 
+        int completionTakt = CurrentTakt + 1;
+        double completionSimulatedMinute = SimulatedElapsedMinutes + taktDurationMinutes;
+
         ResetMovementCounters();
         AdvanceWearAcrossPlant();
         ActivateSupplementarySystemIfNeeded();
         _supplementarySystem.AdvanceOneTakt();
-        MoveVehiclesForward();
+        MoveVehiclesForward(completionTakt, completionSimulatedMinute);
 
         CurrentTakt++;
         SimulatedElapsedMinutes += taktDurationMinutes;
@@ -68,7 +75,9 @@ public sealed class PlantSimulationEngine
         CurrentTakt = 0;
         SimulatedElapsedMinutes = 0.0;
         _nextVINSequence = 1;
+
         _finishedVehicles.Clear();
+        _completedVehicleRecords.Clear();
 
         MainLineGroups = AssemblyFactory.CreateMainLine();
         EngineDressingGroup = AssemblyFactory.CreateEngineDressing();
@@ -107,6 +116,27 @@ public sealed class PlantSimulationEngine
         return _asrsMonitorService.BuildPlaceholderSnapshot();
     }
 
+    public IReadOnlyList<CompletedVehicleRecord> GetCompletedVehiclesInLastSimulatedMinutes(double windowMinutes)
+    {
+        if (windowMinutes <= 0)
+        {
+            return [];
+        }
+
+        double cutoffMinute = SimulatedElapsedMinutes - windowMinutes;
+
+        return _completedVehicleRecords
+            .Where(record => record.CompletionSimulatedMinute >= cutoffMinute)
+            .OrderByDescending(record => record.CompletionSimulatedMinute)
+            .ToList();
+    }
+
+    public IReadOnlyList<CompletedVehicleRecord> GetCompletedVehiclesInLastShift()
+    {
+        const double shiftDurationMinutes = 480.0;
+        return GetCompletedVehiclesInLastSimulatedMinutes(shiftDurationMinutes);
+    }
+
     public IReadOnlyList<StationGroupSnapshot> GetGroupedSnapshot()
     {
         var result = new List<StationGroupSnapshot>();
@@ -140,6 +170,32 @@ public sealed class PlantSimulationEngine
         }
 
         return result;
+    }
+
+    public StationGroupSnapshot GetEngineDressingGroupSnapshot()
+    {
+        var stationSnapshots = new List<StationSnapshot>();
+
+        foreach (var station in EngineDressingGroup.Stations)
+        {
+            var vinText = station.CurrentVIN?.ToString() ?? "EMPTY";
+            var stateText = station.State.ToString();
+            var wearText = $"{station.WearLevel:0.0}%";
+
+            stationSnapshots.Add(
+                new StationSnapshot(
+                    station.Id,
+                    vinText,
+                    stateText,
+                    wearText
+                )
+            );
+        }
+
+        return new StationGroupSnapshot(
+            EngineDressingGroup.GroupType.ToString(),
+            stationSnapshots
+        );
     }
 
     public IReadOnlyList<string> GetEngineDressingSnapshot()
@@ -219,7 +275,7 @@ public sealed class PlantSimulationEngine
         return new VIN(_nextVINSequence++);
     }
 
-    private void MoveVehiclesForward()
+    private void MoveVehiclesForward(int completionTakt, double completionSimulatedMinute)
     {
         for (int groupIndex = MainLineGroups.Count - 1; groupIndex >= 0; groupIndex--)
         {
@@ -245,7 +301,17 @@ public sealed class PlantSimulationEngine
 
                 if (nextStation is null)
                 {
-                    _finishedVehicles.Add(currentStation.CurrentVIN);
+                    var completedVIN = currentStation.CurrentVIN;
+
+                    _finishedVehicles.Add(completedVIN);
+                    _completedVehicleRecords.Add(
+                        new CompletedVehicleRecord(
+                            completedVIN,
+                            completionTakt,
+                            completionSimulatedMinute
+                        )
+                    );
+
                     currentStation.Clear();
                     IncrementMovementCount(group.GroupType);
                     continue;

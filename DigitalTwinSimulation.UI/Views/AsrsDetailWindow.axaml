@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:DigitalTwinSimulation.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="DigitalTwinSimulation.UI.Views.AsrsDetailWindow"
+        x:DataType="vm:AsrsDetailWindowViewModel"
+        Title="ASRS Detail"
+        Width="850"
+        Height="700">
+
+    <DockPanel Margin="20">
+
+        <Border DockPanel.Dock="Top"
+                Background="{Binding StatusColorHex}"
+                CornerRadius="8"
+                Padding="14"
+                Margin="0,0,0,16">
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding MonitorName}"
+                           FontSize="26"
+                           FontWeight="Bold"/>
+
+                <WrapPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding StatusText, StringFormat='Status: {0}'}"
+                               FontSize="15"
+                               Margin="0,0,20,0"/>
+
+                    <TextBlock Text="{Binding StopTypeText, StringFormat='Stop: {0}'}"
+                               FontSize="15"/>
+                </WrapPanel>
+
+                <TextBlock Text="{Binding ReasonText, StringFormat='Reason: {0}'}"
+                           FontSize="15"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+            <StackPanel Spacing="16">
+
+                <Border Padding="12"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="ASRS Storage Summary"
+                                   FontSize="18"
+                                   FontWeight="Bold"/>
+
+                        <UniformGrid Columns="2">
+                            <TextBlock Text="{Binding StoredVehicleCount, StringFormat='Stored Vehicles: {0}'}"/>
+                            <TextBlock Text="{Binding Capacity, StringFormat='Capacity: {0}'}"/>
+
+                            <TextBlock Text="{Binding UsagePercentage, StringFormat='Usage: {0:F1}%'}"/>
+                            <TextBlock Text="{Binding NextRequiredVinText, StringFormat='Next Required VIN: {0}'}"/>
+
+                            <TextBlock Text="{Binding IsNextRequiredVinPresent, StringFormat='Next VIN Present: {0}'}"/>
+                            <TextBlock Text="{Binding IsReleaseReady, StringFormat='Release Ready: {0}'}"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Padding="12"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Stored VINs"
+                                   FontSize="18"
+                                   FontWeight="Bold"/>
+
+                        <Border Padding="8"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                MinHeight="160">
+                            <ItemsControl ItemsSource="{Binding StoredVinTexts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding .}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

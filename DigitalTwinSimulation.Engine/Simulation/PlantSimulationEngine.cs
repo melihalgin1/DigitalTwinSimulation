@@ -13,7 +13,7 @@ public sealed class PlantSimulationEngine
 
     private int _nextVINSequence = 1;
     private readonly List<VIN> _finishedVehicles = [];
-    private readonly SupplementaryPowertrainSystem _supplementarySystem;
+    private SupplementaryPowertrainSystem _supplementarySystem;
     private readonly StandardGroupMonitorService _standardGroupMonitorService = new();
     private readonly SupplementaryMonitorService _supplementaryMonitorService = new();
     private readonly AsrsMonitorService _asrsMonitorService = new();
@@ -21,8 +21,10 @@ public sealed class PlantSimulationEngine
     private readonly Random _random = new();
 
     public int CurrentTakt { get; private set; }
-    public IReadOnlyList<StationGroup> MainLineGroups { get; }
-    public StationGroup EngineDressingGroup { get; }
+    public double SimulatedElapsedMinutes { get; private set; }
+
+    public IReadOnlyList<StationGroup> MainLineGroups { get; private set; }
+    public StationGroup EngineDressingGroup { get; private set; }
 
     public IReadOnlyList<VIN> FinishedVehicles => _finishedVehicles;
     public int FinishedVehicleCount => _finishedVehicles.Count;
@@ -41,19 +43,40 @@ public sealed class PlantSimulationEngine
 
     public void AdvanceOneTakt()
     {
+        AdvanceOneTakt(1.0);
+    }
+
+    public void AdvanceOneTakt(double taktDurationMinutes)
+    {
+        if (taktDurationMinutes <= 0)
+        {
+            taktDurationMinutes = 1.0;
+        }
+
         ResetMovementCounters();
         AdvanceWearAcrossPlant();
         ActivateSupplementarySystemIfNeeded();
         _supplementarySystem.AdvanceOneTakt();
         MoveVehiclesForward();
+
         CurrentTakt++;
+        SimulatedElapsedMinutes += taktDurationMinutes;
     }
 
     public void Reset()
     {
         CurrentTakt = 0;
+        SimulatedElapsedMinutes = 0.0;
+        _nextVINSequence = 1;
         _finishedVehicles.Clear();
-        ResetMovementCounters();
+
+        MainLineGroups = AssemblyFactory.CreateMainLine();
+        EngineDressingGroup = AssemblyFactory.CreateEngineDressing();
+        _supplementarySystem = new SupplementaryPowertrainSystem(EngineDressingGroup);
+
+        _movementCountsLastTakt.Clear();
+        InitializeMovementCounters();
+        SeedInitialVehicle();
     }
 
     public IReadOnlyList<GroupMonitorSnapshot> GetStandardGroupMonitors()

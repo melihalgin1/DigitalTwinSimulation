@@ -14,26 +14,95 @@
     <DockPanel Margin="20">
 
         <StackPanel DockPanel.Dock="Top" Spacing="12">
-            <TextBlock Text="{Binding CurrentTakt, StringFormat='Current Takt: {0}'}"
+
+            <TextBlock Text="Automotive Assembly Digital Twin"
                        FontSize="24"
+                       FontWeight="Bold"
                        HorizontalAlignment="Center"/>
 
-            <TextBlock Text="{Binding FinishedVehicleCount, StringFormat='Finished Vehicles: {0}'}"
-                       FontSize="18"
-                       HorizontalAlignment="Center"/>
+            <WrapPanel HorizontalAlignment="Center"
+                       Orientation="Horizontal">
 
-            <TextBlock Text="{Binding ReadyPowertrainCount, StringFormat='Ready Powertrains: {0}'}"
-                       FontSize="18"
-                       HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding CurrentTakt, StringFormat='Current Takt: {0}'}"
+                           FontSize="16"
+                           Margin="12,0"/>
 
-            <TextBlock Text="{Binding NextReadyPowertrainVin, StringFormat='Next Ready Powertrain VIN: {0}'}"
-                       FontSize="18"
-                       HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding SimulatedElapsedTimeText, StringFormat='Simulated Time: {0}'}"
+                           FontSize="16"
+                           Margin="12,0"/>
 
-            <Button Content="Advance Takt"
-                    Click="AdvanceTakt_Click"
-                    Width="160"
-                    HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding FinishedVehicleCount, StringFormat='Finished Vehicles: {0}'}"
+                           FontSize="16"
+                           Margin="12,0"/>
+
+                <TextBlock Text="{Binding RunStateText, StringFormat='State: {0}'}"
+                           FontSize="16"
+                           Margin="12,0"/>
+
+            </WrapPanel>
+
+            <WrapPanel HorizontalAlignment="Center"
+                       Orientation="Horizontal">
+
+                <TextBlock Text="{Binding ReadyPowertrainCount, StringFormat='Ready Powertrains: {0}'}"
+                           FontSize="15"
+                           Margin="12,0"/>
+
+                <TextBlock Text="{Binding NextReadyPowertrainVin, StringFormat='Next Ready Powertrain VIN: {0}'}"
+                           FontSize="15"
+                           Margin="12,0"/>
+
+            </WrapPanel>
+
+            <Border Padding="10"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    HorizontalAlignment="Center">
+
+                <StackPanel Spacing="10">
+
+                    <WrapPanel Orientation="Horizontal"
+                               HorizontalAlignment="Center">
+
+                        <Button Content="{Binding StartPauseButtonText}"
+                                Click="StartPause_Click"
+                                Width="120"
+                                Margin="6,0"/>
+
+                        <Button Content="Step Takt"
+                                Click="StepTakt_Click"
+                                Width="120"
+                                Margin="6,0"/>
+
+                        <Button Content="Reset"
+                                Click="ResetSimulation_Click"
+                                Width="120"
+                                Margin="6,0"/>
+
+                    </WrapPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Spacing="10">
+
+                        <TextBlock Text="Takt Duration"
+                                   VerticalAlignment="Center"/>
+
+                        <Slider Minimum="0.5"
+                                Maximum="2.0"
+                                Width="260"
+                                Value="{Binding TaktDurationMinutes, Mode=TwoWay}"/>
+
+                        <TextBlock Text="{Binding TaktDurationDisplayText}"
+                                   Width="90"
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Border>
+
         </StackPanel>
 
         <ScrollViewer Margin="0,20,0,0"

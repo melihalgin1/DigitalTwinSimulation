@@ -33,6 +33,15 @@ public sealed class SupplementaryPowertrainSystem
         _isActivated = true;
     }
 
+    public bool IsReadyFor(VIN vin)
+    {
+        if (_readyQueue.Count == 0)
+            return false;
+
+        var nextReady = _readyQueue.Peek();
+        return nextReady.Vin.SequenceNumber == vin.SequenceNumber;
+    }
+
     public bool TryConsumeReadyPowertrain(VIN vin)
     {
         if (_readyQueue.Count == 0)
@@ -99,7 +108,6 @@ public sealed class SupplementaryPowertrainSystem
                 }
                 else
                 {
-                    // Buffer full: hold completed unit at output until capacity opens.
                     return;
                 }
             }

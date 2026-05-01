@@ -14,8 +14,6 @@ This project is a takt-based digital twin simulation of a fictional automotive p
 
 The simulation focuses on **assembly shop realism**, while upstream shops are modeled as structured production feeders supporting takt-synchronized vehicle flow.
 
-This project is designed as a technical portfolio artifact for engineering evaluation contexts such as dual-study or innovation-center applications.
-
 ---
 
 # Plant Layout Architecture

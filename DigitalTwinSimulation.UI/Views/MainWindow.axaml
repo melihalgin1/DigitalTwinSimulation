@@ -8,106 +8,152 @@
         x:Class="DigitalTwinSimulation.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Digital Twin Simulation"
-        Width="1100"
-        Height="850">
+        Width="1250"
+        Height="900">
 
-  <DockPanel Margin="20">
+    <DockPanel Margin="20">
 
-    <StackPanel DockPanel.Dock="Top" Spacing="12">
-      <TextBlock Text="{Binding CurrentTakt, StringFormat='Current Takt: {0}'}"
-                 FontSize="24"
-                 HorizontalAlignment="Center"/>
+        <StackPanel DockPanel.Dock="Top" Spacing="12">
+            <TextBlock Text="{Binding CurrentTakt, StringFormat='Current Takt: {0}'}"
+                       FontSize="24"
+                       HorizontalAlignment="Center"/>
 
-      <TextBlock Text="{Binding FinishedVehicleCount, StringFormat='Finished Vehicles: {0}'}"
-                 FontSize="18"
-                 HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding FinishedVehicleCount, StringFormat='Finished Vehicles: {0}'}"
+                       FontSize="18"
+                       HorizontalAlignment="Center"/>
 
-      <TextBlock Text="{Binding ReadyPowertrainCount, StringFormat='Ready Powertrains: {0}'}"
-                 FontSize="18"
-                 HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding ReadyPowertrainCount, StringFormat='Ready Powertrains: {0}'}"
+                       FontSize="18"
+                       HorizontalAlignment="Center"/>
 
-      <TextBlock Text="{Binding NextReadyPowertrainVin, StringFormat='Next Ready Powertrain VIN: {0}'}"
-                 FontSize="18"
-                 HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding NextReadyPowertrainVin, StringFormat='Next Ready Powertrain VIN: {0}'}"
+                       FontSize="18"
+                       HorizontalAlignment="Center"/>
 
-      <Button Content="Advance Takt"
-              Click="AdvanceTakt_Click"
-              Width="160"
-              HorizontalAlignment="Center"/>
-    </StackPanel>
+            <Button Content="Advance Takt"
+                    Click="AdvanceTakt_Click"
+                    Width="160"
+                    HorizontalAlignment="Center"/>
+        </StackPanel>
 
-    <ScrollViewer Margin="0,20,0,0"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Margin="0,20,0,0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
 
-      <StackPanel Spacing="20">
+            <StackPanel Spacing="20">
 
-        <Border Padding="10"
-                BorderThickness="1"
-                CornerRadius="6">
-          <StackPanel Spacing="6">
-            <TextBlock Text="Main Line"
-                       FontWeight="Bold"
-                       FontSize="18"/>
+                <Border Padding="10"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Group Status Monitors"
+                                   FontWeight="Bold"
+                                   FontSize="20"/>
 
-            <ItemsControl ItemsSource="{Binding StationGroups}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="layout:StationGroupSnapshot">
-                  <Border Margin="0,0,0,12"
-                          Padding="10"
-                          BorderThickness="1"
-                          CornerRadius="6">
-                    <StackPanel Spacing="6">
+                        <ItemsControl ItemsSource="{Binding GroupMonitors}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
 
-                      <TextBlock Text="{Binding GroupName}"
-                                 FontWeight="Bold"
-                                 FontSize="16"/>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:GroupMonitorItemViewModel">
+                                    <Button Margin="0,0,12,12"
+                                            Padding="0"
+                                            MinWidth="220"
+                                            MinHeight="170">
+                                        <Border Background="{Binding StatusColorHex}"
+                                                CornerRadius="8"
+                                                Padding="12">
+                                            <StackPanel Spacing="6">
+                                                <TextBlock Text="{Binding GroupName}"
+                                                           FontWeight="Bold"
+                                                           FontSize="18"/>
 
-                      <ItemsControl ItemsSource="{Binding Stations}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate x:DataType="layout:StationSnapshot">
-                            <TextBlock>
-                              <Run Text="{Binding StationId}"/>
-                              <Run Text=" : "/>
-                              <Run Text="{Binding VinText}"/>
-                              <Run Text=" | "/>
-                              <Run Text="{Binding StateText}"/>
-                              <Run Text=" | "/>
-                              <Run Text="{Binding WearText}"/>
-                            </TextBlock>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-
+                                                <TextBlock Text="{Binding StatusText, StringFormat='Status: {0}'}"/>
+                                                <TextBlock Text="{Binding StopTypeText, StringFormat='Stop: {0}'}"/>
+                                                <TextBlock Text="{Binding ReasonText, StringFormat='Reason: {0}'}"
+                                                           TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding FaultedStations, StringFormat='Faulted: {0}'}"/>
+                                                <TextBlock Text="{Binding EmptyStations, StringFormat='Empty: {0}'}"/>
+                                                <TextBlock Text="{Binding AverageWear, StringFormat='Avg Wear: {0:F1}%'}"/>
+                                                <TextBlock Text="{Binding MovementCountLastTakt, StringFormat='Moves Last Takt: {0}'}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </Border>
+                </Border>
 
-        <Border Padding="10"
-                BorderThickness="1"
-                CornerRadius="6">
-          <StackPanel Spacing="6">
-            <TextBlock Text="Engine Dressing Line"
-                       FontWeight="Bold"
-                       FontSize="18"/>
+                <Border Padding="10"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Main Line Debug Snapshot"
+                                   FontWeight="Bold"
+                                   FontSize="18"/>
 
-            <ItemsControl ItemsSource="{Binding EngineDressingSnapshot}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <TextBlock Text="{Binding .}"/>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </Border>
+                        <ItemsControl ItemsSource="{Binding StationGroups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="layout:StationGroupSnapshot">
+                                    <Border Margin="0,0,0,12"
+                                            Padding="10"
+                                            BorderThickness="1"
+                                            CornerRadius="6">
+                                        <StackPanel Spacing="6">
 
-      </StackPanel>
+                                            <TextBlock Text="{Binding GroupName}"
+                                                       FontWeight="Bold"
+                                                       FontSize="16"/>
 
-    </ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding Stations}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="layout:StationSnapshot">
+                                                        <TextBlock>
+                                                            <Run Text="{Binding StationId}"/>
+                                                            <Run Text=" : "/>
+                                                            <Run Text="{Binding VinText}"/>
+                                                            <Run Text=" | "/>
+                                                            <Run Text="{Binding StateText}"/>
+                                                            <Run Text=" | "/>
+                                                            <Run Text="{Binding WearText}"/>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
 
-  </DockPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Padding="10"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Engine Dressing Debug Snapshot"
+                                   FontWeight="Bold"
+                                   FontSize="18"/>
+
+                        <ItemsControl ItemsSource="{Binding EngineDressingSnapshot}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding .}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+    </DockPanel>
 </Window>

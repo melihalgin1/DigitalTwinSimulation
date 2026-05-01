@@ -9,6 +9,7 @@ namespace DigitalTwinSimulation.UI.ViewModels;
 public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 {
     private readonly PlantSimulationEngine _engine;
+
     private int _currentTakt;
     private int _finishedVehicleCount;
     private int _readyPowertrainCount;
@@ -68,6 +69,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
+    public ObservableCollection<GroupMonitorItemViewModel> GroupMonitors { get; } = new();
     public ObservableCollection<StationGroupSnapshot> StationGroups { get; } = new();
     public ObservableCollection<string> EngineDressingSnapshot { get; } = new();
 
@@ -95,15 +97,19 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     private void RefreshSnapshots()
     {
-        StationGroups.Clear();
+        GroupMonitors.Clear();
+        foreach (var monitor in _engine.GetStandardGroupMonitors())
+        {
+            GroupMonitors.Add(new GroupMonitorItemViewModel(monitor));
+        }
 
+        StationGroups.Clear();
         foreach (var group in _engine.GetGroupedSnapshot())
         {
             StationGroups.Add(group);
         }
 
         EngineDressingSnapshot.Clear();
-
         foreach (var line in _engine.GetEngineDressingSnapshot())
         {
             EngineDressingSnapshot.Add(line);

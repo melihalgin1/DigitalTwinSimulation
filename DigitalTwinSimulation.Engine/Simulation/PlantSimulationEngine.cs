@@ -2,6 +2,7 @@
 using DigitalTwinSimulation.Core.Enums;
 using DigitalTwinSimulation.Core.Factories;
 using DigitalTwinSimulation.Core.Layout;
+using DigitalTwinSimulation.Core.Monitoring;
 using DigitalTwinSimulation.Engine.Services;
 
 namespace DigitalTwinSimulation.Engine.Simulation;
@@ -13,6 +14,8 @@ public sealed class PlantSimulationEngine
     private int _nextVINSequence = 1;
     private readonly List<VIN> _finishedVehicles = [];
     private readonly SupplementaryPowertrainSystem _supplementarySystem;
+    private readonly StandardGroupMonitorService _standardGroupMonitorService = new();
+    private readonly Dictionary<StationGroupType, int> _movementCountsLastTakt = [];
     private readonly Random _random = new();
 
     public int CurrentTakt { get; private set; }
@@ -30,11 +33,13 @@ public sealed class PlantSimulationEngine
         EngineDressingGroup = AssemblyFactory.CreateEngineDressing();
         _supplementarySystem = new SupplementaryPowertrainSystem(EngineDressingGroup);
 
+        InitializeMovementCounters();
         SeedInitialVehicle();
     }
 
     public void AdvanceOneTakt()
     {
+        ResetMovementCounters();
         AdvanceWearAcrossPlant();
         ActivateSupplementarySystemIfNeeded();
         _supplementarySystem.AdvanceOneTakt();
@@ -46,6 +51,22 @@ public sealed class PlantSimulationEngine
     {
         CurrentTakt = 0;
         _finishedVehicles.Clear();
+        ResetMovementCounters();
+    }
+
+    public IReadOnlyList<GroupMonitorSnapshot> GetStandardGroupMonitors()
+    {
+        return _standardGroupMonitorService.BuildSnapshots(
+            CurrentTakt,
+            MainLineGroups,
+            _movementCountsLastTakt,
+            vin => _supplementarySystem.IsReadyFor(vin),
+            () => CanAsrsFeedTr1(),
+            () => CanTr1FeedTr2(),
+            () => CanFeedCh1EntryFromTr2(),
+            () => CanCh1FeedCh2(),
+            () => CanCh2FeedFinal()
+        );
     }
 
     public IReadOnlyList<StationGroupSnapshot> GetGroupedSnapshot()
@@ -86,6 +107,32 @@ public sealed class PlantSimulationEngine
     public IReadOnlyList<string> GetEngineDressingSnapshot()
     {
         return _supplementarySystem.GetEngineDressingSnapshot();
+    }
+
+    private void InitializeMovementCounters()
+    {
+        foreach (var group in MainLineGroups)
+        {
+            _movementCountsLastTakt[group.GroupType] = 0;
+        }
+    }
+
+    private void ResetMovementCounters()
+    {
+        var keys = _movementCountsLastTakt.Keys.ToList();
+
+        foreach (var key in keys)
+        {
+            _movementCountsLastTakt[key] = 0;
+        }
+    }
+
+    private void IncrementMovementCount(StationGroupType groupType)
+    {
+        if (_movementCountsLastTakt.ContainsKey(groupType))
+        {
+            _movementCountsLastTakt[groupType]++;
+        }
     }
 
     private void AdvanceWearAcrossPlant()
@@ -162,6 +209,7 @@ public sealed class PlantSimulationEngine
                 {
                     _finishedVehicles.Add(currentStation.CurrentVIN);
                     currentStation.Clear();
+                    IncrementMovementCount(group.GroupType);
                     continue;
                 }
 
@@ -173,6 +221,7 @@ public sealed class PlantSimulationEngine
                     if (!TryExecuteCarrierTransition(currentStation, nextStation))
                         continue;
 
+                    IncrementMovementCount(group.GroupType);
                     continue;
                 }
 
@@ -181,11 +230,13 @@ public sealed class PlantSimulationEngine
                     if (!TryExecuteMarriageMove(currentStation, nextStation))
                         continue;
 
+                    IncrementMovementCount(group.GroupType);
                     continue;
                 }
 
                 nextStation.LoadVIN(currentStation.CurrentVIN);
                 currentStation.Clear();
+                IncrementMovementCount(group.GroupType);
             }
         }
 
@@ -293,6 +344,37 @@ public sealed class PlantSimulationEngine
         return false;
     }
 
+    private bool CanAsrsFeedTr1()
+    {
+        var tr1 = MainLineGroups.First(g => g.GroupType == StationGroupType.TR1);
+        var tr1First = tr1.Stations[0];
+
+        if (tr1First.IsFaulted)
+            return false;
+
+        return true;
+    }
+
+    private bool CanTr1FeedTr2()
+    {
+        var tr1 = MainLineGroups.First(g => g.GroupType == StationGroupType.TR1);
+        var tr2 = MainLineGroups.First(g => g.GroupType == StationGroupType.TR2);
+
+        var tr1Last = tr1.Stations[^1];
+        var tr2First = tr2.Stations[0];
+
+        if (tr1Last.IsFaulted)
+            return false;
+
+        if (tr1Last.CurrentVIN is null)
+            return false;
+
+        if (tr2First.IsFaulted)
+            return false;
+
+        return true;
+    }
+
     private bool CanFeedCh1EntryFromTr2()
     {
         var tr2 = MainLineGroups.First(g => g.GroupType == StationGroupType.TR2);
@@ -308,6 +390,46 @@ public sealed class PlantSimulationEngine
             return false;
 
         if (ch1First.IsFaulted)
+            return false;
+
+        return true;
+    }
+
+    private bool CanCh1FeedCh2()
+    {
+        var ch1 = MainLineGroups.First(g => g.GroupType == StationGroupType.CH1);
+        var ch2 = MainLineGroups.First(g => g.GroupType == StationGroupType.CH2);
+
+        var ch1Last = ch1.Stations[^1];
+        var ch2First = ch2.Stations[0];
+
+        if (ch1Last.IsFaulted)
+            return false;
+
+        if (ch1Last.CurrentVIN is null)
+            return false;
+
+        if (ch2First.IsFaulted)
+            return false;
+
+        return true;
+    }
+
+    private bool CanCh2FeedFinal()
+    {
+        var ch2 = MainLineGroups.First(g => g.GroupType == StationGroupType.CH2);
+        var final = MainLineGroups.First(g => g.GroupType == StationGroupType.Final);
+
+        var ch2Last = ch2.Stations[^1];
+        var finalFirst = final.Stations[0];
+
+        if (ch2Last.IsFaulted)
+            return false;
+
+        if (ch2Last.CurrentVIN is null)
+            return false;
+
+        if (finalFirst.IsFaulted)
             return false;
 
         return true;
